@@ -13,14 +13,17 @@ import AVFoundation
 class ViewController: UIViewController {
 
     var player = AVAudioPlayer()
-    
+    var timer = Timer()
     
     @IBOutlet weak var songSlider: UISlider!
     
     @IBAction func songSliderMove(_ sender: Any) {
-
+        
+        player.currentTime = TimeInterval(songSlider.value)
         
     }
+    
+    
     @IBOutlet weak var volumeSlider: UISlider!
     
     @IBAction func volumeSliderMove(_ sender: Any) {
@@ -39,6 +42,7 @@ class ViewController: UIViewController {
     @IBAction func pauseButton(_ sender: Any) {
         
         player.pause()
+        timer.invalidate()
         
     }
     
@@ -49,23 +53,27 @@ class ViewController: UIViewController {
             player.currentTime = 0
             player.play()
             
-            
         }
-        
         
     }
     
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+    @objc func update() {
+        
+        songSlider.value = Float(player.currentTime)
+        
+    }
     
+    override func viewDidAppear(_ animated: Bool) {
         
         let audioPath = Bundle.main.path(forResource: "Bach", ofType: "mp3")
         
         do {
             
             player = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: audioPath!))
+            songSlider.maximumValue = Float(player.duration)
+
+            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(ViewController.update), userInfo: nil, repeats: true)
             
             let audioSession = AVAudioSession.sharedInstance()
             
@@ -84,7 +92,14 @@ class ViewController: UIViewController {
             print(error)
             
         }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+       
         
+      
         /*let audioPath = Bundle.main.path(forResource: "\(filename)", ofType: "\(filetyp)")
         
         do {
